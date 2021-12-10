@@ -9,13 +9,14 @@ import numpy as np
 import os
 import sys
 from model import Model
+from pathlib import Path
 
 def gninatype(file):
     # creates gninatype file for model input
     f=open(file.replace('.pdb','.types'),'w')
     f.write(file)
     f.close()
-    atom_map=molgrid.FileMappedGninaTyper('gninamap')
+    atom_map=molgrid.FileMappedGninaTyper(str(Path(__file__).parent / 'gninamap'))
     dataloader=molgrid.ExampleProvider(atom_map,shuffle=False,default_batch_size=1)
     train_types=file.replace('.pdb','.types')
     dataloader.populate(train_types)
