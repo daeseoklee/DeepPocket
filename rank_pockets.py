@@ -32,9 +32,9 @@ def parse_args(argv=None):
 
     return (args, line)
 
-def initialize_model(model, args):
-    checkpoint = torch.load(args.checkpoint)
-    model.cuda()
+def initialize_model(model, args, device='cuda'):
+    checkpoint = torch.load(args.checkpoint, map_location=device)
+    model = model.to(device=device)
     model.load_state_dict(checkpoint['model_state_dict'])
 
 def get_model_gmaker_eproviders(args,batch_size):
@@ -55,7 +55,7 @@ def get_model_gmaker_eproviders(args,batch_size):
 
     return model, gmaker,  eptest_large,eptest_small
 
-def test_model(model, ep, gmaker,  batch_size):
+def test_model(model, ep, gmaker,  batch_size, device='cuda'):
         t=time.time()
         # loss accumulation
         all_labels=[]
@@ -66,15 +66,15 @@ def test_model(model, ep, gmaker,  batch_size):
         tensor_shape = (batch_size,) + dims
         criterion = nn.CrossEntropyLoss()
         #create tensor for input, center and index
-        input_tensor = torch.zeros(tensor_shape, dtype=torch.float32, device='cuda', requires_grad=True)
-        float_labels = torch.zeros((batch_size,4), dtype=torch.float32, device='cuda')
+        input_tensor = torch.zeros(tensor_shape, dtype=torch.float32, device=device, requires_grad=True)
+        float_labels = torch.zeros((batch_size,4), dtype=torch.float32, device=device)
         count=0
         for batch in ep:
             count+=1
             # update float_labels with center and index values
             batch.extract_labels(float_labels)
             centers = float_labels[:,1:]
-            labels = float_labels[:,0].long().to('cuda')
+            labels = float_labels[:,0].long().to(device=device)
             for b in range(batch_size):
                 center = molgrid.float3(float(centers[b][0]),float(centers[b][1]),float(centers[b][2]))
                 # Update input tensor with b'th datapoint of the batch 
