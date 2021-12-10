@@ -89,7 +89,7 @@ if __name__ == '__main__':
         os.system('fpocket -f '+clean_protein_file)
         
     if args.skip_fpocket:
-        fpocket_dir=os.path.join(protein_file.replace('.pdb','_out'),'pockets')
+        fpocket_dir=os.path.join(clean_protein_file.replace('.pdb','_out'),'pockets')
     else:
         fpocket_dir=os.path.join(clean_protein_file.replace('.pdb','_out'),'pockets')
     
@@ -97,6 +97,7 @@ if __name__ == '__main__':
     barycenter_file=os.path.join(fpocket_dir,'bary_centers.txt')
     #types and gninatyper
     protein_gninatype=gninatype(clean_protein_file)
+    
     class_types=create_types(barycenter_file,protein_gninatype)
     #rank pockets
     class_model=Model()
