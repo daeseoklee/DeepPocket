@@ -118,7 +118,6 @@ def parse_args(argv=None):
 def test(model, test_loader, gmaker_img,device,dx_name, args):
     if args.rank==0:
         return
-    count=0
     model.eval()
     dims = gmaker_img.grid_dimensions(test_loader.num_types())
     tensor_shape = (1,) + dims
@@ -126,8 +125,7 @@ def test(model, test_loader, gmaker_img,device,dx_name, args):
     input_tensor = torch.zeros(tensor_shape, dtype=torch.float32, device=device, requires_grad=True)
     float_labels = torch.zeros((1, 4), dtype=torch.float32, device=device)
     prot_prody=parsePDB(args.protein)
-    for batch in test_loader:
-        count+=1
+    for count, batch in enumerate(test_loader, start=1):
         # update float_labels with center and index values
         batch.extract_labels(float_labels)
         centers = float_labels[:, 1:]
