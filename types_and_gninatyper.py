@@ -11,25 +11,32 @@ import sys
 from model import Model
 from pathlib import Path
 
-def gninatype(file):
+def gninatype(file, gninatype_dir=None):
     # creates gninatype file for model input
-    f=open(file.replace('.pdb','.types'),'w')
-    f.write(file)
-    f.close()
+    train_types=file.replace('.pdb','.types')
+    with open(train_types, 'w') as f:
+        f.write(file)
+        
     atom_map=molgrid.FileMappedGninaTyper(str(Path(__file__).parent / 'gninamap'))
     dataloader=molgrid.ExampleProvider(atom_map,shuffle=False,default_batch_size=1)
-    train_types=file.replace('.pdb','.types')
     dataloader.populate(train_types)
+    
     example=dataloader.next()
     coords=example.coord_sets[0].coords.tonumpy()
     types=example.coord_sets[0].type_index.tonumpy()
     types=np.int_(types) 
-    fout=open(file.replace('.pdb','.gninatypes'),'wb')
-    for i in range(coords.shape[0]):
-        fout.write(struct.pack('fffi',coords[i][0],coords[i][1],coords[i][2],types[i]))
-    fout.close()
+
+    if gninatype_dir is None:
+        gninatype_file = file.replace('.pdb','.gninatypes')
+    else:
+        gninatype_file = os.path.join(gninatype_dir, os.path.basename(file).replace('.pdb','.gninatypes'))
+    with open(gninatype_file,'wb') as fout:
+        for i in range(coords.shape[0]):
+            fout.write(struct.pack('fffi',coords[i][0],coords[i][1],coords[i][2],types[i]))
+            
     os.remove(train_types)
-    return file.replace('.pdb','.gninatypes')
+    
+    return gninatype_file
 
 def create_types(file,protein):
     # create types file for model predictions

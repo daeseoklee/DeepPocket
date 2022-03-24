@@ -115,7 +115,7 @@ def parse_args(argv=None):
 
     return (args, line)
 
-def test(model, test_loader, gmaker_img,device,dx_name, args):
+def test(model, test_loader, gmaker_img, device, seg_output_dir, args):
     if args.rank==0:
         return
     model.eval()
@@ -140,11 +140,11 @@ def test(model, test_loader, gmaker_img,device,dx_name, args):
         # predict binding site residues
         pred_coords = Output_Coordinates(masks_pred, center)
         pred_aa = predicted_AA(pred_coords, prot_prody, args.mask_dist)
-        output_pocket_pdb(dx_name+'_pocket'+str(count)+'.pdb',prot_prody,pred_aa)
+        output_pocket_pdb(os.path.join(seg_output_dir, f'pocket{count}.pdb'), prot_prody,pred_aa)
         masks_pred=masks_pred.cpu()
         # Output predicted mask in .dx format 
         masks_pred=molgrid.Grid3f(masks_pred)
-        molgrid.write_dx(dx_name+'_'+str(count)+'.dx',masks_pred,center,0.5,1.0)
+        molgrid.write_dx(os.path.join(seg_output_dir, f'pocket{count}.dx'), masks_pred,center,0.5,1.0)
         if count>=args.rank:
             break
 

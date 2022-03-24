@@ -2,32 +2,24 @@
 Predict binding sites given a .pdb file of a protein
 '''
 from Bio.PDB import PDBParser, PDBIO, Select
-import Bio
 import os
-import sys
-import re
+
 import torch.nn as nn
 import torch
 import torch.nn.functional as F
 from sklearn.metrics import roc_auc_score
-import numpy as np
-import imp
+
 import molgrid
 import argparse
-import time
-from skimage.morphology import binary_dilation
-from skimage.morphology import cube
-from skimage.morphology import closing
-from skimage.segmentation import clear_border
-from skimage.measure import label
-import struct
+
 from clean_pdb import clean_pdb
 from get_centers import get_centers
 from types_and_gninatyper import gninatype,create_types
 from model import Model
 from rank_pockets import test_model
 from unet import Unet
-from segment_pockets import test
+import segment_pockets
+#from segment_pockets import test
 import gc
 def parse_args(argv=None):
     '''Return argument namespace and commandline'''
@@ -96,7 +88,8 @@ if __name__ == '__main__':
     get_centers(fpocket_dir)
     barycenter_file=os.path.join(fpocket_dir,'bary_centers.txt')
     #types and gninatyper
-    protein_gninatype=gninatype(clean_protein_file)
+    gninatype_dir = os.path.join(fpocket_dir, os.path.pardir)
+    protein_gninatype=gninatype(clean_protein_file, gninatype_dir=gninatype_dir)
     
     class_types=create_types(barycenter_file,protein_gninatype)
     #rank pockets
@@ -129,4 +122,6 @@ if __name__ == '__main__':
         seg_model = nn.DataParallel(seg_model)
         seg_model, seg_gmaker, seg_eptest=get_model_gmaker_eprovider(seg_types,1,seg_model,seg_checkpoint,dims=32, device=device)
         dx_name=clean_protein_file.replace('.pdb','')
-        test(seg_model, seg_eptest, seg_gmaker,device,dx_name, args)
+        seg_output_dir = os.path.join(fpocket_dir, os.path.pardir, 'segmented')
+        os.mkdir(seg_output_dir)
+        segment_pockets.test(seg_model, seg_eptest, seg_gmaker, device, seg_output_dir, args)
