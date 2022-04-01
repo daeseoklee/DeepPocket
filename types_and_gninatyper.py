@@ -38,6 +38,33 @@ def gninatype(file, gninatype_dir=None):
     
     return gninatype_file
 
+
+def gninatype2(gninamap_file, src_file, target_file):
+    """
+    Slightly more flexible input/output (Added by Dae) 
+    """
+    # creates gninatype file for model input
+    temp_types_file = src_file.replace('.pdb','.types')
+    with open(temp_types_file, 'w') as f:
+        f.write(src_file)
+        
+    atom_map=molgrid.FileMappedGninaTyper(gninamap_file)
+    dataloader=molgrid.ExampleProvider(atom_map,shuffle=False,default_batch_size=1)
+    dataloader.populate(temp_types_file)
+    
+    example=dataloader.next()
+    coords=example.coord_sets[0].coords.tonumpy()
+    types=example.coord_sets[0].type_index.tonumpy()
+    types=np.int_(types) 
+
+    with open(target_file,'wb') as fout:
+        for i in range(coords.shape[0]):
+            fout.write(struct.pack('fffi',coords[i][0],coords[i][1],coords[i][2],types[i]))
+            
+    os.remove(temp_types_file)
+    
+    return target_file
+
 def create_types(file,protein):
     # create types file for model predictions
     fout=open(file.replace('.txt','.types'),'w')

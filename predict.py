@@ -102,7 +102,7 @@ if __name__ == '__main__':
         batch_size=50
     class_model, class_gmaker, class_eptest=get_model_gmaker_eprovider(class_types,batch_size,class_model,class_checkpoint, device=device)
     #divisible by 50 if types_lines > 50
-    class_labels, class_probs = test_model(class_model, class_eptest, class_gmaker,  batch_size, device=device)
+    class_labels, class_probs = test_model(class_model, class_eptest, class_gmaker,  batch_size, device=device) 
     zipped_lists = zip(class_probs[:len(types_lines)], types_lines)
     sorted_zipped_lists = sorted(zipped_lists,reverse=True)
     ranked_types = [element for _, element in sorted_zipped_lists]

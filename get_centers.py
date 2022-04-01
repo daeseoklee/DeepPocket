@@ -6,7 +6,7 @@ import numpy as np
 import sys
 import re
 
-def get_centers(dir):
+def get_centers(dirqdf):
     bary = open(dir+'/bary_centers.txt','w')
     for d in os.listdir(dir):
         centers = []
