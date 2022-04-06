@@ -8,7 +8,6 @@ import struct
 import numpy as np
 import os
 import sys
-from model import Model
 from pathlib import Path
 
 def gninatype(file, gninatype_dir=None):
